@@ -32,6 +32,9 @@ def download_video(request: VideoRequest, background_tasks: BackgroundTasks):
         ydl_opts = {
             'format': 'bestaudio/best',
             'outtmpl': file_id, 
+            'noplaylist': True,
+            'quiet': True,
+            'cookiefile': 'cookies.txt',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
