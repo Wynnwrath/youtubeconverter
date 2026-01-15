@@ -26,7 +26,7 @@ export default function MainPage() {
         setStatus('loading');
 
         try {
-            const response = await fetch('https://youtubeconverter-w2sq.onrender.com', {
+            const response = await fetch('https://youtubeconverter-w2sq.onrender.com/download', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url: url }),
