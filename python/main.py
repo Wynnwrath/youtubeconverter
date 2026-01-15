@@ -1,13 +1,16 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import yt_dlp
+import os
+import uuid
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=["*"], 
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -15,34 +18,48 @@ app.add_middleware(
 class VideoRequest(BaseModel):
     url: str
 
-def run_download(link: str):
+def delete_file(path: str):
+    if os.path.exists(path):
+        os.remove(path)
+        print(f"🗑️ Deleted temp file: {path}")
+
+@app.post("/download")
+def download_video(request: VideoRequest, background_tasks: BackgroundTasks):
     try:
+        file_id = str(uuid.uuid4())
+        filename = f"{file_id}.mp3"
+        
         ydl_opts = {
             'format': 'bestaudio/best',
-            'outtmpl': 'F:/Codes/Music/%(title)s.%(ext)s', 
-            'playlist_items': '1-5', 
+            'outtmpl': file_id, 
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
-            'ffmpeg_location': 'F:/Codes/youtubeconverter/python/', 
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([link])
-        return True
+            ydl.download([request.url])
+
+        final_path = f"{file_id}.mp3"
+        if not os.path.exists(final_path):
+             for file in os.listdir('.'):
+                 if file.startswith(file_id):
+                     final_path = file
+                     break
+        
+        if not os.path.exists(final_path):
+            raise Exception("File not found after download")
+
+        background_tasks.add_task(delete_file, final_path)
+
+        return FileResponse(
+            path=final_path, 
+            filename="downloaded_song.mp3",
+            media_type='audio/mpeg'
+        )
+
     except Exception as e:
         print(f"Error: {e}")
-        return False
-
-@app.post("/download")
-def download_video(request: VideoRequest):
-    print(f"📥 Received URL: {request.url}")
-    
-    success = run_download(request.url)
-    
-    if success:
-        return {"status": "success", "message": "Download complete!"}
-    else:
-        raise HTTPException(status_code=500, detail="Download failed. Check server logs.")
+        raise HTTPException(status_code=500, detail=str(e))

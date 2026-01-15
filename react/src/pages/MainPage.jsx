@@ -1,5 +1,5 @@
 import { BsArrowLeftRight, BsDownload, BsCheckCircle, BsExclamationCircle } from "react-icons/bs";
-import { AiOutlineLoading3Quarters } from "react-icons/ai"; // New loading icon
+import { AiOutlineLoading3Quarters } from "react-icons/ai"; // Spinner Icon
 import { LuInfo } from "react-icons/lu";
 import { FaPaste } from "react-icons/fa";
 import { CiLink } from "react-icons/ci";
@@ -8,8 +8,9 @@ import { useState } from "react";
 export default function MainPage() {
 
     const [url, setUrl] = useState('');
-    const [status, setStatus] = useState('idle'); 
+    const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
 
+    // --- PASTE FUNCTION ---
     const handlePaste = async () => {
         try {
             const text = await navigator.clipboard.readText();
@@ -19,6 +20,7 @@ export default function MainPage() {
         }
     };
 
+    // --- DOWNLOAD FUNCTION ---
     const handleDownload = async () => {
         if (!url) return;
         setStatus('loading');
@@ -32,6 +34,7 @@ export default function MainPage() {
 
             if (response.ok) {
                 setStatus('success');
+                // Reset after 4 seconds
                 setTimeout(() => {
                     setStatus('idle');
                     setUrl(''); 
@@ -49,23 +52,18 @@ export default function MainPage() {
 
     return (
         <div className="flex h-screen bg-gray-100 relative overflow-hidden">
-            
-            {/* --- NEW: FLOATING NOTIFICATION CARD --- */}
-            {/* Conditional rendering: Only shows if status is NOT idle */}
             <div className={`fixed top-6 right-6 z-50 transition-all duration-500 transform ${status === 'idle' ? 'translate-x-full opacity-0' : 'translate-x-0 opacity-100'}`}>
                 <div className={`flex items-center gap-4 px-6 py-4 rounded-xl shadow-2xl border border-white/10 backdrop-blur-md ${
                     status === 'loading' ? 'bg-blue-900/90 text-white' :
                     status === 'success' ? 'bg-green-600/90 text-white' :
                     'bg-red-600/90 text-white'
                 }`}>
-                    {/* Icon Logic */}
                     <div className="text-2xl">
                         {status === 'loading' && <AiOutlineLoading3Quarters className="animate-spin" />}
                         {status === 'success' && <BsCheckCircle />}
                         {status === 'error'   && <BsExclamationCircle />}
                     </div>
                     
-                    {/* Text Logic */}
                     <div>
                         <h4 className="font-bold text-sm">
                             {status === 'loading' ? 'Processing...' :
@@ -81,8 +79,6 @@ export default function MainPage() {
                 </div>
             </div>
 
-
-            {/* --- SIDEBAR --- */}
             <aside className="flex flex-col shadow-xl text-white bg-zinc-900 w-25 border-s border-gray-800 z-10">
                 <div className="flex flex-col justify-center items-center mt-6 mb-8 gap-4">
                     <div>
@@ -92,6 +88,7 @@ export default function MainPage() {
                     </div>
                     <img src="/sky.jpg" alt="Logo" className="w-20 h-20 rounded-full object-cover transition-transform duration-300 hover:scale-110 cursor-pointer" />
                 </div>
+                
                 <nav className="flex flex-col justify-between flex-1 mb-4">
                     <ul className="space-y-2">
                         <li>
@@ -110,18 +107,21 @@ export default function MainPage() {
                 </nav>
             </aside>
 
-            {/* --- MAIN CONTENT --- */}
             <main className="flex-1 bg-black flex flex-col items-center justify-center p-4">
+                
                 <div className="pt-3 mb-6">
                     <img src="/pluto.png" alt="Pluto" className="w-40 drop-shadow-lg"/>
                 </div>
 
                 <div className="max-w-2xl w-full mx-auto bg-black rounded-2xl shadow-2xl border border-gray-800 p-8">
                     <h2 className="text-2xl font-bold text-white mb-6">Download MP3</h2>
+                    
                     <div className="space-y-4">
                         <div className="relative">
                             <label className="block text-sm font-medium text-gray-400 mb-1">YouTube URL</label>
+                            
                             <CiLink className="absolute top-[38px] left-4 text-gray-400 text-xl pointer-events-none"/>
+                            
                             <input 
                                 type="text" 
                                 value={url}
