@@ -1,5 +1,5 @@
 import { BsArrowLeftRight, BsDownload, BsCheckCircle, BsExclamationCircle } from "react-icons/bs";
-import { AiOutlineLoading3Quarters } from "react-icons/ai"; // Spinner Icon
+import { AiOutlineLoading3Quarters } from "react-icons/ai"; 
 import { LuInfo } from "react-icons/lu";
 import { FaPaste } from "react-icons/fa";
 import { CiLink } from "react-icons/ci";
@@ -10,7 +10,6 @@ export default function MainPage() {
     const [url, setUrl] = useState('');
     const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
 
-    // --- PASTE FUNCTION ---
     const handlePaste = async () => {
         try {
             const text = await navigator.clipboard.readText();
@@ -20,13 +19,13 @@ export default function MainPage() {
         }
     };
 
-    // --- DOWNLOAD FUNCTION ---
     const handleDownload = async () => {
         if (!url) return;
+        
         setStatus('loading');
 
         try {
-            const response = await fetch('https://youtubeconverter-w2sq.onrender.com/download', {
+            const response = await fetch('http://127.0.0.1:8000/download', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url: url }),
@@ -34,11 +33,10 @@ export default function MainPage() {
 
             if (response.ok) {
                 setStatus('success');
-                // Reset after 4 seconds
                 setTimeout(() => {
                     setStatus('idle');
                     setUrl(''); 
-                }, 4000);
+                }, 4000); 
             } else {
                 setStatus('error');
                 setTimeout(() => setStatus('idle'), 4000);
@@ -54,9 +52,9 @@ export default function MainPage() {
         <div className="flex h-screen bg-gray-100 relative overflow-hidden">
             <div className={`fixed top-6 right-6 z-50 transition-all duration-500 transform ${status === 'idle' ? 'translate-x-full opacity-0' : 'translate-x-0 opacity-100'}`}>
                 <div className={`flex items-center gap-4 px-6 py-4 rounded-xl shadow-2xl border border-white/10 backdrop-blur-md ${
-                    status === 'loading' ? 'bg-blue-900/90 text-white' :
-                    status === 'success' ? 'bg-green-600/90 text-white' :
-                    'bg-red-600/90 text-white'
+                    status === 'loading' ? 'bg-blue-900/95 text-white' :
+                    status === 'success' ? 'bg-green-600/95 text-white' :
+                    'bg-red-600/95 text-white'
                 }`}>
                     <div className="text-2xl">
                         {status === 'loading' && <AiOutlineLoading3Quarters className="animate-spin" />}
@@ -64,21 +62,24 @@ export default function MainPage() {
                         {status === 'error'   && <BsExclamationCircle />}
                     </div>
                     
+                    {/* Text Section */}
                     <div>
                         <h4 className="font-bold text-sm">
                             {status === 'loading' ? 'Processing...' :
                              status === 'success' ? 'Download Complete!' :
                              'Download Failed'}
                         </h4>
-                        <p className="text-xs opacity-80">
+                        <p className="text-xs opacity-90">
                             {status === 'loading' ? 'Converting video to MP3' :
                              status === 'success' ? 'Saved to your Music folder' :
-                             'Please check the URL'}
+                             'Please check the URL or server'}
                         </p>
                     </div>
                 </div>
             </div>
 
+
+            {/* --- SIDEBAR --- */}
             <aside className="flex flex-col shadow-xl text-white bg-zinc-900 w-25 border-s border-gray-800 z-10">
                 <div className="flex flex-col justify-center items-center mt-6 mb-8 gap-4">
                     <div>
@@ -86,9 +87,13 @@ export default function MainPage() {
                             <BsArrowLeftRight className="text-4xl text-gray-300 group-hover:text-gray-900 mx-auto mb-2 transition-colors" />
                         </a>
                     </div>
-                    <img src="/sky.jpg" alt="Logo" className="w-20 h-20 rounded-full object-cover transition-transform duration-300 hover:scale-110 cursor-pointer" />
+                    <img 
+                        src="/sky.jpg" 
+                        alt="Logo"
+                        className="w-20 h-20 rounded-full object-cover transition-transform duration-300 hover:scale-110 cursor-pointer" 
+                    />
                 </div>
-                
+
                 <nav className="flex flex-col justify-between flex-1 mb-4">
                     <ul className="space-y-2">
                         <li>
@@ -107,6 +112,7 @@ export default function MainPage() {
                 </nav>
             </aside>
 
+            {/* --- MAIN CONTENT --- */}
             <main className="flex-1 bg-black flex flex-col items-center justify-center p-4">
                 
                 <div className="pt-3 mb-6">
@@ -137,16 +143,25 @@ export default function MainPage() {
                                 disabled={status === 'loading'}
                                 className={`w-full font-bold py-3 rounded-lg transition shadow-lg 
                                     ${status === 'loading' ? 'bg-gray-700 cursor-not-allowed text-gray-300' : 
+                                      status === 'success' ? 'bg-green-600 text-white' : 
+                                      status === 'error' ? 'bg-red-600 text-white' : 
                                       'bg-blue-900 hover:bg-blue-800 text-white shadow-blue-500/30'}`
                                 }
                             >
-                                {status === 'loading' ? 'Downloading...' : 'Start Download'}
+                                {status === 'loading' ? 'Downloading...' : 
+                                 status === 'success' ? 'Done! Check Folder' : 
+                                 status === 'error' ? 'Error (Check Console)' : 
+                                 'Start Download'}
                             </button>
 
-                            <button onClick={handlePaste} className="bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition flex items-center gap-2 border border-gray-700">
+                            <button 
+                                onClick={handlePaste}
+                                className="bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition flex items-center gap-2 border border-gray-700"
+                            >
                                 <FaPaste className="text-lg" />
                                 <span>Paste</span>
                             </button>
+
                         </div>
                     </div>
                 </div>
